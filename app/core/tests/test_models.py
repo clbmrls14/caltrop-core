@@ -4,6 +4,11 @@ from django.contrib.auth import get_user_model
 from core import models
 
 
+def get_sample_user(email='test@gmail.com', password='testpassword'):
+    """Create a sample user"""
+    return get_user_model().objects.create_user(email, password)
+
+
 class ModelTests(TestCase):
     def test_create_user_with_email_successful(self):
         """Test creating a new user with email is successful"""
@@ -37,3 +42,12 @@ class ModelTests(TestCase):
 
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
+
+    def test_game_title_str(self):
+        """Test the game title representation"""
+        game = models.Game.objects.create(
+            owner=get_sample_user(),
+            title='Test Game',
+        )
+
+        self.assertEqual(str(game), game.title)
