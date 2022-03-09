@@ -1,3 +1,4 @@
+from genericpath import exists
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -63,3 +64,20 @@ class PrivateGamesApiTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(len(res.data), 1)
         self.assertEqual(res.data[0]['title'], game.title)
+
+    def test_create_game_successful(self):
+        """Test creating a new game"""
+        payload = {'title': 'Test Game'}
+        self.client.post(GAMES_URL, payload)
+
+        self.assertTrue(Game.objects.filter(
+            owner=self.user,
+            title=payload['title']
+        ).exists())
+
+    def test_create_game_invalid(self):
+        """Test creating a new game with invalid payload"""
+        payload = {'name': ''}
+        res = self.client.post(GAMES_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)

@@ -6,7 +6,7 @@ from core.models import Game
 from game import serializers
 
 
-class GameViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+class GameViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin):
     """Manage games in the database"""
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
@@ -16,3 +16,7 @@ class GameViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     def get_queryset(self):
         """Return objects for the currect authenticated user only"""
         return self.queryset.filter(owner=self.request.user).order_by('-title')
+
+    def perform_create(self, serializer):
+        """Create a new game"""
+        serializer.save(owner=self.request.user)
