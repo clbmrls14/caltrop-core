@@ -6,6 +6,7 @@ from game import views
 
 router = DefaultRouter()
 router.register('games', views.GameViewSet)
+router.register('players', views.PlayerViewSet)
 
 app_name = 'game'
 

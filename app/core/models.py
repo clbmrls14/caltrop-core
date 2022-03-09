@@ -1,3 +1,4 @@
+import re
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager,  PermissionsMixin
 from django.conf import settings
@@ -45,6 +46,17 @@ class Game(models.Model):
         on_delete=models.CASCADE,
     )
     track_health = models.BooleanField(default=True)
+    players = models.ManyToManyField('Player')
 
     def __str__(self):
         return self.title
+
+
+class Player(models.Model):
+    """Player in a game"""
+    name = models.CharField(max_length=255)
+    character_name = models.CharField(max_length=255, blank=True)
+    health = models.IntegerField(default=4)
+
+    def __str__(self):
+        return self.name

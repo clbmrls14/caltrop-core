@@ -9,6 +9,14 @@ def get_sample_user(email='test@gmail.com', password='testpassword'):
     return get_user_model().objects.create_user(email, password)
 
 
+def get_sample_game(title='Test Game'):
+    """Create a sample game"""
+    return models.Game.objects.create(
+        owner=get_sample_user(),
+        title=title,
+    )
+
+
 class ModelTests(TestCase):
     def test_create_user_with_email_successful(self):
         """Test creating a new user with email is successful"""
@@ -45,9 +53,15 @@ class ModelTests(TestCase):
 
     def test_game_title_str(self):
         """Test the game title representation"""
-        game = models.Game.objects.create(
-            owner=get_sample_user(),
-            title='Test Game',
-        )
+        game = get_sample_game()
 
         self.assertEqual(str(game), game.title)
+
+    def test_player_str(self):
+        """Test the player string representation"""
+        player = models.Player.objects.create(
+            name='Test Player',
+            game=get_sample_game()
+        )
+
+        self.assertEqual(str(player), player.name)
