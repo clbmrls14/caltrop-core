@@ -5,11 +5,30 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Game
+from core.models import Game, Player
 
-from game.serializers import GameSerializer
+from game.serializers import GameSerializer, GameDetailSerializer
 
 GAMES_URL = reverse('game:game-list')
+
+
+def game_detail_url(game_id):
+    """Return game details URL based on game id"""
+    return reverse('game:game-detail', args=[game_id])
+
+
+def get_sample_game(user, **params):
+    """Create and return a default game for testing"""
+    defaults = {
+        'title': 'Test Game',
+    }
+    defaults.update(params)
+
+    return Game.objects.create(owner=user, **defaults)
+
+
+def get_sample_player(name='Test Player'):
+    return Player.objects.create(name='name')
 
 
 class PublicGamesApiTests(TestCase):
@@ -44,7 +63,7 @@ class PrivateGamesApiTests(TestCase):
 
         res = self.client.get(GAMES_URL)
 
-        games = Game.objects.all().order_by('-title')
+        games = Game.objects.all().order_by('-id')
         serializer = GameSerializer(games, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
@@ -80,3 +99,14 @@ class PrivateGamesApiTests(TestCase):
         res = self.client.post(GAMES_URL, payload)
 
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_game_details(self):
+        """Test retrieving details about a game"""
+        game = get_sample_game(user=self.user)
+        game.players.add(get_sample_player())
+
+        url = game_detail_url(game.id)
+        res = self.client.get(url)
+
+        serialializer = GameDetailSerializer(game)
+        self.assertEqual(res.data, serialializer.data)

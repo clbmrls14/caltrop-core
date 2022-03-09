@@ -12,11 +12,6 @@ from game.serializers import PlayerSerializer
 PLAYERS_URL = reverse('game:player-list')
 
 
-def game_detail_url(game_id):
-    """Return game details URL based on game id"""
-    return reverse('game:game-details', args=[game_id])
-
-
 class PublicPlayersApiTests(TestCase):
     """Test the publicly available player API"""
 
