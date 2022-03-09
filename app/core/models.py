@@ -44,6 +44,7 @@ class Game(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
+    track_health = models.BooleanField(default=True)
 
     def __str__(self):
         return self.title
