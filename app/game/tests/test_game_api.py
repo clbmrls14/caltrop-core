@@ -28,7 +28,7 @@ def get_sample_game(user, **params):
 
 
 def get_sample_player(name='Test Player'):
-    return Player.objects.create(name='name')
+    return Player.objects.create(name=name)
 
 
 class PublicGamesApiTests(TestCase):
@@ -92,6 +92,24 @@ class PrivateGamesApiTests(TestCase):
             owner=self.user,
             title=payload['title']
         ).exists())
+
+    def test_create_game_with_players(self):
+        """Test creating a game with players"""
+        player1 = get_sample_player()
+        player2 = get_sample_player('Test Player 2')
+        payload = {
+            'title': 'Test Game',
+            'owner': self.user,
+            'players': [player1.id, player2.id],
+        }
+        res = self.client.post(GAMES_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        game = Game.objects.get(id=res.data['id'])
+        players = game.players.all()
+        self.assertEqual(players.count(), 2)
+        self.assertIn(player1, players)
+        self.assertIn(player2, players)
 
     def test_create_game_invalid(self):
         """Test creating a new game with invalid payload"""

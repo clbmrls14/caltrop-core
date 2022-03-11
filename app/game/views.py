@@ -1,9 +1,29 @@
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets, mixins, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
 from core.models import Game, Player
 from game import serializers
+
+
+class BaseGameAttrViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin):
+    """Base viewset for user owned game attributes"""
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        """Return objects for the currect authenticated user only"""
+        assigned_only = bool(
+            int(self.request.query_params.get('assigned_only', 0)))
+        queryset = self.queryset
+        if assigned_only:
+            queryset = queryset.filter(recipe__isnull=False)
+
+        return queryset.filter(user=self.request.user).order_by('-id').distinct()
+
+    def perform_create(self, serializer):
+        """Create a new object"""
+        serializer.save(owner=self.request.user)
 
 
 class GameViewSet(viewsets.ModelViewSet):
@@ -31,11 +51,5 @@ class GameViewSet(viewsets.ModelViewSet):
 
 class PlayerViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     """Manage players in the database"""
-    authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
     queryset = Player.objects.all()
     serializer_class = serializers.PlayerSerializer
-
-    def get_queryset(self):
-        """Return players for the current game"""
-        return self.queryset.filter(game=self.request.user).order_by('-name')
